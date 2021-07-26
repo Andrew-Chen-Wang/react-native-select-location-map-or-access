@@ -14,8 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-import React from 'react';
-import {Image, StyleSheet, useColorScheme, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 
 MapboxGL.setAccessToken(
@@ -38,16 +45,26 @@ const styles = StyleSheet.create({
   },
   center: {
     position: 'absolute',
-    top: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pinCenter: {
+    top: -30, // adjust for pin
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  locationCenter: {
+    bottom: 44,
+    left: 40,
   },
   imageSize: {
     height: 30,
     width: 30,
+  },
+  getLocationCenter: {
+    bottom: 44,
+    right: 40,
   },
 });
 
@@ -64,40 +81,90 @@ const districtsGeoJson =
 // https://github.com/react-native-mapbox-gl/maps/blob/0e173c757c754ca6b3710fab88fe37b7b2014995/example/src/examples/GeoJSONSource.js
 export default () => {
   const isDarkMode = useColorScheme() === 'dark';
-  const imageColor = {tintColor: isDarkMode ? 'white' : 'black'};
+  const imageTintColor = isDarkMode ? 'white' : 'black';
+  const imageColor = {tintColor: imageTintColor};
+  const textColor = {color: imageTintColor};
   const borderColor = isDarkMode ? 255 : 0;
   const borderLayerColor = {
     ...layerStyles.smileyFace,
     fillOutlineColor: `rgba(${borderColor}, ${borderColor}, ${borderColor}, 0.84)`,
   };
+  const [followUser, setFollowUser] = useState(false);
+  const locationImageTintColor = {
+    tintColor: followUser ? '#006ee6' : isDarkMode ? 'white' : 'black',
+  };
 
-  const onUserMarkerPress = () => {
-    console.log('You pressed on the user location annotation');
+  const mapRef = useRef();
+  const cameraRef = useRef();
+
+  const onUserMarkerUpdate = location => {
+    if (followUser) {
+      cameraRef.current.flyTo([
+        location.coords.longitude,
+        location.coords.latitude,
+      ]);
+    }
+  };
+
+  const followUserPress = () => {
+    setFollowUser(_followUser => !_followUser);
+  };
+
+  const displayLocation = async () => {
+    console.log('center: ', await mapRef.current.getCenter());
+    console.log(
+      'getPointInView: ',
+      await mapRef.current.getPointInView(await mapRef.current.getCenter()),
+    );
   };
 
   return (
     <View style={styles.page}>
       <View style={styles.container}>
         <MapboxGL.MapView
+          ref={mapRef}
+          attributionPosition={{top: 14, left: 14}}
           style={styles.map}
           logoEnabled={false}
-          styleURL={isDarkMode ? MapboxGL.StyleURL.Dark : null}>
+          styleURL={
+            isDarkMode ? MapboxGL.StyleURL.Dark : MapboxGL.StyleURL.Street
+          }>
           <MapboxGL.ShapeSource id="smileyFaceSource" url={districtsGeoJson}>
             <MapboxGL.FillLayer id="smileyFaceFill" style={borderLayerColor} />
           </MapboxGL.ShapeSource>
           <MapboxGL.Camera
+            ref={cameraRef}
             defaultSettings={{
               centerCoordinate: [-100, 37.6396365],
               zoomLevel: 2.5,
             }}
           />
-          <MapboxGL.UserLocation visible={true} onPress={onUserMarkerPress} />
+          <MapboxGL.UserLocation onUpdate={onUserMarkerUpdate} />
         </MapboxGL.MapView>
-        <View style={styles.center} pointerEvents="box-none">
+        <View
+          style={[styles.center, styles.pinCenter]}
+          pointerEvents="box-none">
           <Image
             style={[styles.imageSize, imageColor]}
             source={require('./pin/pin.png')}
           />
+        </View>
+        <View
+          style={[styles.center, styles.locationCenter]}
+          pointerEvents="box-none">
+          <TouchableOpacity onPress={followUserPress}>
+            <Image
+              style={[styles.imageSize, locationImageTintColor]}
+              source={require('./my-location/my-location.png')}
+            />
+          </TouchableOpacity>
+        </View>
+        <View
+          style={[styles.center, styles.getLocationCenter]}
+          pointerEvents="box-none">
+          <TouchableOpacity onPress={displayLocation}>
+            <Text style={textColor}>Get Location (view in console)</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

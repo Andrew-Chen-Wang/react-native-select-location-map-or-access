@@ -9,6 +9,8 @@
 This repository was created for the [Hear Ye app](https://hearye.us/).
 This utilizes the free MapBox SDK.
 
+You can press a button and get your current geographic position
+with the ability to continuously track your location.
 It shows all U.S. Congressional Districts and a
 location pin at the center of the screen. Additionally,
 it supports dark mode using the `useColorScheme` hook.
