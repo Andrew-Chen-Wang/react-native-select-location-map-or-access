@@ -3,7 +3,7 @@
 | Created by    | [Andrew-Chen-Wang](https://github.com/Andrew-Chen-Wang)
 | ------------- |-------------
 | Created on    | 26 July 2021, 0002
-| Finished      | 26 July 2021, 0121
+| Finished      | 26 July 2021, 0236
 | License       | Apache 2.0 License. You can find the license in the [LICENSE file](./LICENSE)
 
 This repository was created for the [Hear Ye app](https://hearye.us/).

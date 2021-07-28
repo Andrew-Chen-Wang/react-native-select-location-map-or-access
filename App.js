@@ -111,11 +111,26 @@ export default () => {
   };
 
   const displayLocation = async () => {
-    console.log('center: ', await mapRef.current.getCenter());
+    // center: [-100, 37.6396365];
+    const center = await mapRef.current.getCenter();
+    console.log('center: ', center);
+    // getPointInView:  [195, 421.99999999999966]
+    const point = await mapRef.current.getPointInView(center);
+    console.log('getPointInView: ', point);
+    // a {"features": [{"geometry": [Object], "properties":
+    // [Object], "type": "Feature"}], "type": "FeatureCollection"}
     console.log(
-      'getPointInView: ',
-      await mapRef.current.getPointInView(await mapRef.current.getCenter()),
+      'a',
+      await mapRef.current.queryRenderedFeaturesAtPoint(point, null, [
+        'smileyFaceFill',
+      ]),
     );
+    // {"Code": "KS-01", "District": "Kansas 1st"}
+    (
+      await mapRef.current.queryRenderedFeaturesAtPoint(point, null, [
+        'smileyFaceFill',
+      ])
+    ).features.forEach(x => console.log(x.properties));
   };
 
   return (
