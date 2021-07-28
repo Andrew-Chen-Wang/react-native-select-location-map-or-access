@@ -15,7 +15,14 @@ It shows all U.S. Congressional Districts and a
 location pin at the center of the screen. Additionally,
 it supports dark mode using the `useColorScheme` hook.
 
+Also included is filling in the district that the user
+selected. This allows for better client verification that
+the selected region is indeed their actually correct
+selection.
+
 ![demo screenshot](./.github/assets/demo1.png)
+
+![fill demo screenshot](./.github/assets/demo2.png)
 
 ### Usage
 

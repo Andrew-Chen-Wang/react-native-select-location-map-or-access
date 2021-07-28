@@ -84,11 +84,16 @@ export default () => {
   const imageTintColor = isDarkMode ? 'white' : 'black';
   const imageColor = {tintColor: imageTintColor};
   const textColor = {color: imageTintColor};
+
+  // For FillLayer
   const borderColor = isDarkMode ? 255 : 0;
+  const [borderOpacity, setBorderOpacity] = useState('transparent');
   const borderLayerColor = {
     ...layerStyles.smileyFace,
+    fillColor: borderOpacity,
     fillOutlineColor: `rgba(${borderColor}, ${borderColor}, ${borderColor}, 0.84)`,
   };
+
   const [followUser, setFollowUser] = useState(false);
   const locationImageTintColor = {
     tintColor: followUser ? '#006ee6' : isDarkMode ? 'white' : 'black',
@@ -111,26 +116,39 @@ export default () => {
   };
 
   const displayLocation = async () => {
+    setFollowUser(false);
+
+    // Debugging information:
+
     // center: [-100, 37.6396365];
     const center = await mapRef.current.getCenter();
     console.log('center: ', center);
     // getPointInView:  [195, 421.99999999999966]
     const point = await mapRef.current.getPointInView(center);
     console.log('getPointInView: ', point);
-    // a {"features": [{"geometry": [Object], "properties":
+    // {"features": [{"geometry": [Object], "properties":
     // [Object], "type": "Feature"}], "type": "FeatureCollection"}
-    console.log(
-      'a',
-      await mapRef.current.queryRenderedFeaturesAtPoint(point, null, [
-        'smileyFaceFill',
-      ]),
+    const query = await mapRef.current.queryRenderedFeaturesAtPoint(
+      point,
+      null,
+      ['smileyFaceFill'],
     );
+    console.log(query);
     // {"Code": "KS-01", "District": "Kansas 1st"}
-    (
-      await mapRef.current.queryRenderedFeaturesAtPoint(point, null, [
-        'smileyFaceFill',
-      ])
-    ).features.forEach(x => console.log(x.properties));
+    query.features.forEach(x =>
+      console.log(Object.keys(x.geometry), x.properties),
+    );
+
+    // Change opacity of the other layers to be dimmer and fill
+    // the current district with whiter ish color.
+    // https://docs.mapbox.com/ios/maps/examples/select-layer/
+    const districtCode = query.features[0].properties.Code;
+    setBorderOpacity([
+      'case',
+      ['==', ['get', 'Code'], districtCode],
+      `rgba(${borderColor}, ${borderColor}, ${borderColor}, 0.24)`,
+      'transparent',
+    ]);
   };
 
   return (
